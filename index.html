@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f7f4ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+<title>Two Suppers</title>
+<style>
+  :root {
+    --paper: #f7f4ee;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --rule: #d9d4c7;
+    --accent: #5a7a3f;
+    --tick: #2d4a1e;
+    --note-bg: rgba(217, 212, 199, 0.3);
+    --tab-bg: rgba(217, 212, 199, 0.4);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1c1c1e;
+      --ink: #f1ede4;
+      --muted: #9a9690;
+      --rule: #3a3a3c;
+      --accent: #a8c886;
+      --tick: #a8c886;
+      --note-bg: rgba(168, 200, 134, 0.08);
+      --tab-bg: rgba(168, 200, 134, 0.06);
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* Sticky tab bar */
+  .tabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--paper);
+    padding: 16px 0 12px;
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 24px;
+  }
+
+  .tab {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 10px 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s ease;
+    font-weight: 500;
+  }
+
+  .tab.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  header {
+    text-align: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 28px;
+  }
+
+  .eyebrow {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    margin: 0 0 18px;
+    line-height: 1.1;
+  }
+
+  .recipes {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .recipes div + div { margin-top: 2px; }
+
+  .serves {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+
+  section { margin-bottom: 28px; }
+
+  h2 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  ul.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  ul.list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 11px 4px;
+    border-bottom: 1px dotted var(--rule);
+    cursor: pointer;
+  }
+
+  ul.list li:last-child { border-bottom: none; }
+
+  ul.list input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    margin: 0;
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+    position: relative;
+    background: transparent;
+    transition: background 0.15s ease;
+  }
+
+  ul.list input[type="checkbox"]:checked {
+    background: var(--tick);
+    border-color: var(--tick);
+  }
+
+  ul.list input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 11px;
+    border: solid var(--paper);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  ul.list label {
+    flex: 1;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  ul.list input[type="checkbox"]:checked + label {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  .qty {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 14px;
+    margin-left: 2px;
+  }
+
+  .note {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--muted);
+    background: var(--note-bg);
+    padding: 14px 16px;
+    border-left: 2px solid var(--accent);
+    margin-top: 32px;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .reset {
+    display: block;
+    margin: 24px auto 0;
+    background: none;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  /* Wake lock toggle */
+  .wake-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+  }
+
+  .wake-toggle.on {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+  }
+
+  .wake-toggle .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.2s ease;
+  }
+
+  .wake-toggle.on .dot {
+    background: var(--paper);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
+  }
+
+  .wake-toggle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Method styling */
+  .times {
+    display: flex;
+    gap: 0;
+    margin: 18px 0 0;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .time-cell {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    background: var(--tab-bg);
+  }
+
+  .time-cell + .time-cell {
+    border-left: 1px solid var(--rule);
+  }
+
+  .time-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .time-value {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: var(--ink);
+  }
+
+  ol.steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 0;
+  }
+
+  ol.steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 16px 0 16px 44px;
+    border-bottom: 1px dotted var(--rule);
+  }
+
+  ol.steps li:last-child { border-bottom: none; }
+
+  ol.steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    color: var(--accent);
+    font-family: Georgia, serif;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  ol.steps li p {
+    margin: 0;
+  }
+
+  ol.steps li p + p {
+    margin-top: 8px;
+  }
+
+  /* Inline timers */
+  .timer-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 7px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-variant-numeric: tabular-nums;
+    transition: all 0.15s ease;
+  }
+
+  .timer-btn::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: background 0.15s ease;
+  }
+
+  .timer-btn.running {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  .timer-btn.running::before {
+    background: var(--paper);
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  .timer-btn.done {
+    background: #c4604a;
+    border-color: #c4604a;
+    color: white;
+    animation: shake 0.5s ease-in-out 3;
+  }
+
+  .timer-btn.done::before {
+    background: white;
+    animation: none;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+  }
+
+  /* Basket panel */
+  .basket-item {
+    padding: 16px 0;
+    border-bottom: 1px dotted var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    align-items: baseline;
+  }
+
+  .basket-item:last-child { border-bottom: none; }
+
+  .basket-item .item-name {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: var(--ink);
+  }
+
+  .basket-item .item-price {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .basket-item .item-pick {
+    grid-column: 1 / 2;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .basket-item.est .item-price::after {
+    content: " ~";
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .basket-total {
+    margin-top: 24px;
+    padding: 18px 16px;
+    background: var(--note-bg);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 2px 2px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .basket-total .total-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .basket-total .total-value {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .basket-total .per-head {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .disclaimer {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--muted);
+    text-align: center;
+    margin: 24px 12px 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" data-panel="shop">Shopping</button>
+    <button class="tab" data-panel="schnitzel">Schnitzel</button>
+    <button class="tab" data-panel="mussels">Mussels</button>
+    <button class="tab" data-panel="basket">Basket</button>
+  </div>
+
+  <button class="wake-toggle" id="wakeBtn">
+    <span class="dot"></span>
+    <span class="label">Keep screen awake</span>
+  </button>
+
+  <!-- ============== SHOPPING ============== -->
+  <div class="panel active" id="shop">
+
+    <header>
+      <p class="eyebrow">— Shopping List —</p>
+      <h1>For Two Suppers</h1>
+      <div class="recipes">
+        <div>Chicken Schnitzel, Burnt Salsa &amp; Fennel Slaw</div>
+        <div>Mussels with 'Nduja and Lemon</div>
+      </div>
+      <p class="serves">Serves 4 · Each</p>
+    </header>
+
+    <section>
+      <h2>Fresh</h2>
+      <ul class="list">
+        <li><input type="checkbox" id="i1"><label for="i1">Skinless, boneless chicken breasts <span class="qty">× 4</span></label></li>
+        <li><input type="checkbox" id="i2"><label for="i2">Mussels <span class="qty">1 kg</span></label></li>
+        <li><input type="checkbox" id="i3"><label for="i3">'Nduja <span class="qty">100 g</span></label></li>
+        <li><input type="checkbox" id="i4"><label for="i4">Cherry tomatoes <span class="qty">300 g</span></label></li>
+        <li><input type="checkbox" id="i5"><label for="i5">Onion <span class="qty">× 1</span></label></li>
+        <li><input type="checkbox" id="i6"><label for="i6">Garlic <span class="qty">1 bulb (9 cloves)</span></label></li>
+        <li><input type="checkbox" id="i7"><label for="i7">Long red chilli <span class="qty">× 1</span></label></li>
+        <li><input type="checkbox" id="i8"><label for="i8">Fresh coriander <span class="qty">30 g</span></label></li>
+        <li><input type="checkbox" id="i9"><label for="i9">Fresh basil <span class="qty">15 g</span></label></li>
+        <li><input type="checkbox" id="i10"><label for="i10">Fennel bulbs <span class="qty">× 2</span></label></li>
+        <li><input type="checkbox" id="i11"><label for="i11">Lemons <span class="qty">× 4</span></label></li>
+        <li><input type="checkbox" id="i12"><label for="i12">Medium eggs <span class="qty">× 2</span></label></li>
+        <li><input type="checkbox" id="i13"><label for="i13">Double cream <span class="qty">100 ml</span></label></li>
+        <li><input type="checkbox" id="i14"><label for="i14">Mayonnaise <span class="qty">3 tbsp</span></label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Bakery</h2>
+      <ul class="list">
+        <li><input type="checkbox" id="i15"><label for="i15">Sourdough bread <span class="qty">4 slices</span></label></li>
+        <li><input type="checkbox" id="i16"><label for="i16">Panko breadcrumbs <span class="qty">200 g</span></label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Wine &amp; Vinegar</h2>
+      <ul class="list">
+        <li><input type="checkbox" id="i17"><label for="i17">Dry white wine <span class="qty">180 ml</span></label></li>
+        <li><input type="checkbox" id="i18"><label for="i18">White wine vinegar <span class="qty">60 ml</span></label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Cupboard</h2>
+      <ul class="list">
+        <li><input type="checkbox" id="i19"><label for="i19">Plain flour <span class="qty">100 g</span></label></li>
+        <li><input type="checkbox" id="i20"><label for="i20">Vegetable oil <span class="qty">for frying</span></label></li>
+        <li><input type="checkbox" id="i21"><label for="i21">Olive oil <span class="qty">80 ml — for salsa</span></label></li>
+        <li><input type="checkbox" id="i22"><label for="i22">Extra virgin olive oil <span class="qty">5 tbsp — mussels &amp; bread</span></label></li>
+        <li><input type="checkbox" id="i23"><label for="i23">Sea salt flakes</label></li>
+        <li><input type="checkbox" id="i24"><label for="i24">Freshly ground black pepper</label></li>
+      </ul>
+    </section>
+
+    <p class="note">
+      Lemons cover the slaw (2), mussels (1) and serving wedges (1). The salsa uses regular olive oil, while the mussels and grilled bread call for extra virgin — pick up both if your cupboard is bare.
+    </p>
+
+    <button class="reset" id="resetBtn">Reset List</button>
+  </div>
+
+  <!-- ============== SCHNITZEL ============== -->
+  <div class="panel" id="schnitzel">
+
+    <header>
+      <p class="eyebrow">— Method —</p>
+      <h1>Chicken Schnitzel</h1>
+      <div class="recipes">Burnt Salsa &amp; Fennel Slaw</div>
+      <div class="times">
+        <div class="time-cell">
+          <div class="time-label">Prep</div>
+          <div class="time-value">25 min</div>
+        </div>
+        <div class="time-cell">
+          <div class="time-label">Cook</div>
+          <div class="time-value">15 min</div>
+        </div>
+        <div class="time-cell">
+          <div class="time-label">Total</div>
+          <div class="time-value">~40 min</div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <h2>Schnitzel</h2>
+      <ol class="steps">
+        <li><p>Butterfly each chicken breast: slice horizontally nearly in half, leaving the halves attached, then open out. Place between sheets of clingfilm or baking paper and gently bash with a rolling pin to an even thickness of ½–1 cm.</p></li>
+        <li><p>Put the flour, eggs and crumbs into 3 separate shallow bowls. Season the flour well. Line 2 baking trays with baking paper to rest the breaded schnitzels on.</p></li>
+        <li><p>Dip an escalope into the flour, shake off excess, pass through the egg, then press firmly into the crumbs to coat fully. Keep one hand dry by alternating wet and dry bowls. Lay on a lined tray. Repeat for all four.</p></li>
+        <li><p>If preparing ahead, stack the breaded escalopes with a sheet of baking paper between each.</p></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Burnt Salsa</h2>
+      <ol class="steps">
+        <li><p>Place a cast-iron or heavy-based pan over high heat. Once hot, add the whole cherry tomatoes, onion, garlic and chilli.</p></li>
+        <li><p>Cook for 3–4 minutes until everything is well-charred all over.</p>
+        <button class="timer-btn" data-seconds="240" data-label="Char veg">Start 4:00</button></li>
+        <li><p>Remove from the pan, let cool, then finely chop. Combine in a bowl with the chopped coriander, olive oil, white wine vinegar and salt to taste. Set aside at room temperature.</p></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Fennel Slaw</h2>
+      <ol class="steps">
+        <li><p>Mix the thinly sliced fennel with the mayonnaise, juice of 2 lemons and a generous pinch of salt. Taste and adjust salt as needed.</p></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>To Finish</h2>
+      <ol class="steps">
+        <li><p>Heat a generous layer of vegetable oil in a large pan over medium-high heat. Fry the schnitzels until deep golden on each side, then drain briefly on kitchen paper.</p></li>
+        <li><p>Serve with the burnt salsa spooned over, fennel slaw alongside and lemon wedges for squeezing.</p></li>
+      </ol>
+    </section>
+
+    <p class="note">
+      Tip: the salsa and slaw can both be made ahead — the salsa even improves after sitting for half an hour. Fry the schnitzels last so they stay crisp.
+    </p>
+  </div>
+
+  <!-- ============== MUSSELS ============== -->
+  <div class="panel" id="mussels">
+
+    <header>
+      <p class="eyebrow">— Method —</p>
+      <h1>Mussels with 'Nduja</h1>
+      <div class="recipes">and Lemon, with grilled sourdough</div>
+      <div class="times">
+        <div class="time-cell">
+          <div class="time-label">Prep</div>
+          <div class="time-value">10 min</div>
+        </div>
+        <div class="time-cell">
+          <div class="time-label">Cook</div>
+          <div class="time-value">10 min</div>
+        </div>
+        <div class="time-cell">
+          <div class="time-label">Total</div>
+          <div class="time-value">~20 min</div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <h2>Preparing the Mussels</h2>
+      <ol class="steps">
+        <li><p>In a large bowl, rinse the mussels under cold water, giving them a good scrub to remove any dirt.</p>
+        <p>Discard any with broken shells. Tap any with open shells against the side of the bowl — if they don't close, throw those away too.</p></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>The Sauce</h2>
+      <ol class="steps">
+        <li><p>Put the olive oil and grated garlic in a cold pan (this stops the garlic burning). Bring up to medium heat for about 30 seconds, until lightly cooked but not coloured.</p>
+        <button class="timer-btn" data-seconds="30" data-label="Garlic">Start 0:30</button></li>
+        <li><p>Tip in the wine, followed by the 'nduja — break it up so it melts into the sauce. Reduce by half.</p></li>
+        <li><p>Add the cream and the basil sprig (if using), then bring to a rapid boil over high heat.</p></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Cook the Mussels</h2>
+      <ol class="steps">
+        <li><p>Keeping the heat high, add the mussels and cover with a lid. Cook for 1–2 minutes until the shells open, giving the pan a shake after 1 minute.</p>
+        <button class="timer-btn" data-seconds="60" data-label="Shake pan">Start 1:00</button>
+        <button class="timer-btn" data-seconds="120" data-label="Check shells">Start 2:00</button></li>
+        <li><p>Remove from the heat, squeeze in the lemon juice and scatter over the picked basil leaves (if using).</p></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Grilled Bread</h2>
+      <ol class="steps">
+        <li><p>Set a griddle pan over high heat. Brush the sourdough with olive oil on both sides.</p></li>
+        <li><p>Grill for a few minutes on each side until nicely coloured.</p>
+        <button class="timer-btn" data-seconds="180" data-label="Each side">Start 3:00</button></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>To Serve</h2>
+      <ol class="steps">
+        <li><p>Spoon mussels and sauce into warmed bowls, discarding any shells that haven't opened. Serve with the toasts alongside for soaking up the sauce.</p></li>
+      </ol>
+    </section>
+
+    <p class="note">
+      Tip: start the sauce while the bread is heating on the griddle — the whole dish comes together in about 10 minutes once you're cooking.
+    </p>
+  </div>
+
+  <!-- ============== BASKET ============== -->
+  <div class="panel" id="basket">
+
+    <header>
+      <p class="eyebrow">— Estimated Basket —</p>
+      <h1>At Waitrose</h1>
+      <div class="recipes">A guide to picks &amp; rough costs</div>
+      <p class="serves">Serves 8 in total · ~£4 per head</p>
+    </header>
+
+    <section>
+      <h2>Fresh</h2>
+
+      <div class="basket-item">
+        <div class="item-name">Chicken breasts × 4</div>
+        <div class="item-price">£9.50</div>
+        <div class="item-pick">Waitrose Slower Reared Chicken Breast Fillets — XL Pack 1.2kg (£7.92/kg). The 600g pack at £5.50 is a slightly tight fit for 4 portions.</div>
+      </div>
+
+      <div class="basket-item">
+        <div class="item-name">Mussels, 1kg</div>
+        <div class="item-price">£6.50</div>
+        <div class="item-pick">Loch Fyne Live Gold Shell Mussels from the fish counter (rope-grown, MSC). Ask for them on the day you'll cook them.</div>
+      </div>
+
+      <div class="basket-item">
+        <div class="item-name">'Nduja, 100g</div>
+        <div class="item-price">£3.75</div>
+        <div class="item-pick">Cooks' Ingredients 'Nduja (95g) — perfectly sized. The paste version works too if the sliced is out.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Cherry tomatoes, 300g</div>
+        <div class="item-price">£2.20</div>
+        <div class="item-pick">A standard 300g punnet. Waitrose's Duchy Organic is lovely if you want to upgrade.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Onion × 1</div>
+        <div class="item-price">£0.40</div>
+        <div class="item-pick">Loose brown onion. Pick a medium-large one for the salsa.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Garlic, 1 bulb</div>
+        <div class="item-price">£0.55</div>
+        <div class="item-pick">A single bulb covers all 9 cloves needed.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Long red chilli × 1</div>
+        <div class="item-price">£0.50</div>
+        <div class="item-pick">From the loose chilli shelf — grab one with a good stem.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Fresh coriander, 30g</div>
+        <div class="item-price">£0.95</div>
+        <div class="item-pick">Cooks' Ingredients fresh coriander bunch — pick one with bright, perky leaves.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Fresh basil, 15g</div>
+        <div class="item-price">£1.20</div>
+        <div class="item-pick">A small herb pack or potted basil works. Optional in the mussels — skip if you'd rather.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Fennel bulbs × 2</div>
+        <div class="item-price">£3.50</div>
+        <div class="item-pick">Look for firm, pale bulbs with feathery green tops still attached — a sign of freshness.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Lemons × 4</div>
+        <div class="item-price">£1.80</div>
+        <div class="item-pick">Unwaxed if doing the slaw zest. A 4-pack of unwaxed lemons or 6 loose works.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Medium eggs × 2</div>
+        <div class="item-price">£2.40</div>
+        <div class="item-pick">A 6-pack of free-range medium. You'll have 4 spare for breakfast.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Double cream, 150ml</div>
+        <div class="item-price">£1.40</div>
+        <div class="item-pick">A small pot — 150ml is the smallest size and gives you a touch over the 100ml needed.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Mayonnaise</div>
+        <div class="item-price">£2.50</div>
+        <div class="item-pick">Heinz or Hellmann's for the slaw, or Waitrose Mayonnaise if you prefer own-brand.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Bakery</h2>
+
+      <div class="basket-item est">
+        <div class="item-name">Sourdough loaf</div>
+        <div class="item-price">£2.80</div>
+        <div class="item-pick">Waitrose No.1 White Sourdough or LoveLife Sourdough — you only need 4 slices.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Panko breadcrumbs, 200g</div>
+        <div class="item-price">£1.85</div>
+        <div class="item-pick">Cooks' Ingredients Japanese Style Panko — light and crisp, ideal for the schnitzel.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Wine &amp; Vinegar</h2>
+
+      <div class="basket-item est">
+        <div class="item-name">Dry white wine</div>
+        <div class="item-price">£8.50</div>
+        <div class="item-pick">A small bottle of Picpoul de Pinet or a budget Sauvignon — drink the rest with the mussels.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">White wine vinegar, 250ml+</div>
+        <div class="item-price">£1.65</div>
+        <div class="item-pick">Cooks' Ingredients White Wine Vinegar — a cupboard staple worth having.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Cupboard</h2>
+
+      <div class="basket-item est">
+        <div class="item-name">Plain flour</div>
+        <div class="item-price">£1.20</div>
+        <div class="item-pick">Allinson's or Waitrose Essential plain flour — a 1.5kg bag is plenty.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Vegetable oil, 1L</div>
+        <div class="item-price">£2.80</div>
+        <div class="item-pick">For shallow frying — you need a decent depth in the pan.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Olive oil</div>
+        <div class="item-price">£5.50</div>
+        <div class="item-pick">Filippo Berio mild, or Waitrose Italian Olive Oil — for the salsa.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Extra virgin olive oil</div>
+        <div class="item-price">£7.00</div>
+        <div class="item-pick">Waitrose No.1 Sicilian or similar — for the mussels &amp; grilled bread.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Sea salt flakes</div>
+        <div class="item-price">£2.50</div>
+        <div class="item-pick">Maldon — worth the upgrade for the slaw and finishing.</div>
+      </div>
+
+      <div class="basket-item est">
+        <div class="item-name">Black peppercorns</div>
+        <div class="item-price">£2.20</div>
+        <div class="item-pick">Cooks' Ingredients in a grinder, if you don't already have a mill going.</div>
+      </div>
+    </section>
+
+    <div class="basket-total">
+      <div>
+        <div class="total-label">Estimated Total</div>
+        <div class="per-head">~ £8.65 per head, serves 8</div>
+      </div>
+      <div class="total-value">£69.20</div>
+    </div>
+
+    <p class="disclaimer">
+      Prices marked with <strong>~</strong> are estimates based on typical Waitrose pricing — only the chicken, mussels and 'nduja figures are checked. Pantry items (oils, flour, vinegar, salt) inflate the total but are reusable across many meals — your true per-meal cost is much lower if your cupboard is already stocked.
+    </p>
+  </div>
+
+</div>
+
+<script>
+  // Tab switching
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.panel;
+      tabs.forEach(t => t.classList.toggle('active', t === tab));
+      panels.forEach(p => p.classList.toggle('active', p.id === target));
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      try { localStorage.setItem('active-tab', target); } catch (e) {}
+    });
+  });
+
+  // Restore last tab
+  try {
+    const last = localStorage.getItem('active-tab');
+    if (last) {
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.panel === last));
+      panels.forEach(p => p.classList.toggle('active', p.id === last));
+    }
+  } catch (e) {}
+
+  // Checkbox persistence
+  const boxes = document.querySelectorAll('input[type="checkbox"]');
+  const KEY = 'shopping-list-state';
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+    boxes.forEach(box => { if (saved[box.id]) box.checked = true; });
+  } catch (e) {}
+
+  boxes.forEach(box => {
+    box.addEventListener('change', () => {
+      try {
+        const state = {};
+        boxes.forEach(b => { if (b.checked) state[b.id] = true; });
+        localStorage.setItem(KEY, JSON.stringify(state));
+      } catch (e) {}
+    });
+  });
+
+  // Inline cooking timers
+  const timerBtns = document.querySelectorAll('.timer-btn');
+  const activeTimers = new Map();
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  function playAlert() {
+    // Beep three times using Web Audio API (no file needed)
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      for (let i = 0; i < 3; i++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.value = 880;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0, now + i * 0.4);
+        gain.gain.linearRampToValueAtTime(0.3, now + i * 0.4 + 0.02);
+        gain.gain.linearRampToValueAtTime(0, now + i * 0.4 + 0.25);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now + i * 0.4);
+        osc.stop(now + i * 0.4 + 0.3);
+      }
+    } catch (e) {}
+    // Vibration on supported devices
+    try {
+      if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 200]);
+    } catch (e) {}
+  }
+
+  function startTimer(btn) {
+    const totalSeconds = parseInt(btn.dataset.seconds, 10);
+    const label = btn.dataset.label;
+    let remaining = totalSeconds;
+
+    btn.classList.remove('done');
+    btn.classList.add('running');
+    btn.textContent = label + ' ' + formatTime(remaining);
+
+    const interval = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(interval);
+        activeTimers.delete(btn);
+        btn.classList.remove('running');
+        btn.classList.add('done');
+        btn.textContent = label + ' — done!';
+        playAlert();
+      } else {
+        btn.textContent = label + ' ' + formatTime(remaining);
+      }
+    }, 1000);
+
+    activeTimers.set(btn, { interval, totalSeconds, label });
+  }
+
+  function stopTimer(btn) {
+    const t = activeTimers.get(btn);
+    if (t) {
+      clearInterval(t.interval);
+      activeTimers.delete(btn);
+    }
+    btn.classList.remove('running', 'done');
+    btn.textContent = 'Start ' + formatTime(parseInt(btn.dataset.seconds, 10));
+  }
+
+  timerBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('running') || btn.classList.contains('done')) {
+        stopTimer(btn);
+      } else {
+        startTimer(btn);
+      }
+    });
+  });
+
+  function resetList() {
+    boxes.forEach(b => b.checked = false);
+    try { localStorage.removeItem(KEY); } catch (e) {}
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', resetList);
+
+  // Wake Lock — keep screen awake
+  let wakeLock = null;
+  const wakeBtn = document.getElementById('wakeBtn');
+  const wakeLabel = wakeBtn.querySelector('.label');
+
+  if (!('wakeLock' in navigator)) {
+    wakeBtn.disabled = true;
+    wakeLabel.textContent = 'Screen lock not supported';
+  } else {
+    wakeBtn.addEventListener('click', toggleWakeLock);
+  }
+
+  async function requestWakeLock() {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeBtn.classList.add('on');
+      wakeLabel.textContent = 'Screen staying awake';
+      wakeLock.addEventListener('release', () => {
+        wakeBtn.classList.remove('on');
+        wakeLabel.textContent = 'Keep screen awake';
+        wakeLock = null;
+      });
+    } catch (e) {
+      wakeLabel.textContent = 'Open in Safari to enable';
+      wakeLock = null;
+    }
+  }
+
+  async function toggleWakeLock() {
+    try {
+      if (wakeLock) {
+        await wakeLock.release();
+        wakeLock = null;
+      } else {
+        await requestWakeLock();
+      }
+    } catch (e) {
+      // silently fail rather than throw
+    }
+  }
+
+  // iOS releases the wake lock when the tab is backgrounded.
+  // Re-acquire when the page becomes visible again if the user had it on.
+  document.addEventListener('visibilitychange', async () => {
+    try {
+      if (document.visibilityState === 'visible' && wakeBtn.classList.contains('on') && !wakeLock) {
+        await requestWakeLock();
+      }
+    } catch (e) {}
+  });
+</script>
+
+</body>
+</html>
