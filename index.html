@@ -4,8 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f7f4ee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<meta name="apple-mobile-web-app-title" content="Two Suppers">
 <title>Two Suppers</title>
 <style>
   :root {
@@ -511,6 +517,69 @@
     padding-top: 20px;
     border-top: 1px solid var(--rule);
   }
+
+  /* Servings adjuster */
+  .servings {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--note-bg);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 2px 2px 0;
+    margin-bottom: 24px;
+  }
+
+  .servings-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .servings-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .servings-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-family: Georgia, serif;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .servings-btn:active {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  .servings-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .servings-value {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    min-width: 32px;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -542,49 +611,58 @@
       <p class="serves">Serves 4 · Each</p>
     </header>
 
+    <div class="servings">
+      <span class="servings-label">Servings</span>
+      <div class="servings-controls">
+        <button class="servings-btn" id="servingsDown" aria-label="Less">−</button>
+        <span class="servings-value" id="servingsValue">4</span>
+        <button class="servings-btn" id="servingsUp" aria-label="More">+</button>
+      </div>
+    </div>
+
     <section>
       <h2>Fresh</h2>
       <ul class="list">
-        <li><input type="checkbox" id="i1"><label for="i1">Skinless, boneless chicken breasts <span class="qty">× 4</span></label></li>
-        <li><input type="checkbox" id="i2"><label for="i2">Mussels <span class="qty">1 kg</span></label></li>
-        <li><input type="checkbox" id="i3"><label for="i3">'Nduja <span class="qty">100 g</span></label></li>
-        <li><input type="checkbox" id="i4"><label for="i4">Cherry tomatoes <span class="qty">300 g</span></label></li>
-        <li><input type="checkbox" id="i5"><label for="i5">Onion <span class="qty">× 1</span></label></li>
-        <li><input type="checkbox" id="i6"><label for="i6">Garlic <span class="qty">1 bulb (9 cloves)</span></label></li>
-        <li><input type="checkbox" id="i7"><label for="i7">Long red chilli <span class="qty">× 1</span></label></li>
-        <li><input type="checkbox" id="i8"><label for="i8">Fresh coriander <span class="qty">30 g</span></label></li>
-        <li><input type="checkbox" id="i9"><label for="i9">Fresh basil <span class="qty">15 g</span></label></li>
-        <li><input type="checkbox" id="i10"><label for="i10">Fennel bulbs <span class="qty">× 2</span></label></li>
-        <li><input type="checkbox" id="i11"><label for="i11">Lemons <span class="qty">× 4</span></label></li>
-        <li><input type="checkbox" id="i12"><label for="i12">Medium eggs <span class="qty">× 2</span></label></li>
-        <li><input type="checkbox" id="i13"><label for="i13">Double cream <span class="qty">100 ml</span></label></li>
-        <li><input type="checkbox" id="i14"><label for="i14">Mayonnaise <span class="qty">3 tbsp</span></label></li>
+        <li><input type="checkbox" id="i1"><label for="i1">Skinless, boneless chicken breasts <span class="qty" data-base="4" data-unit="× {n}" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i2"><label for="i2">Mussels <span class="qty" data-base="1" data-unit="{n} kg" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i3"><label for="i3">'Nduja <span class="qty" data-base="100" data-unit="{n} g" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i4"><label for="i4">Cherry tomatoes <span class="qty" data-base="300" data-unit="{n} g" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i5"><label for="i5">Onion <span class="qty" data-base="1" data-unit="× {n}" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i6"><label for="i6">Garlic <span class="qty" data-base="9" data-unit="{n} cloves" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i7"><label for="i7">Long red chilli <span class="qty" data-base="1" data-unit="× {n}" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i8"><label for="i8">Fresh coriander <span class="qty" data-base="30" data-unit="{n} g" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i9"><label for="i9">Fresh basil <span class="qty" data-base="15" data-unit="{n} g" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i10"><label for="i10">Fennel bulbs <span class="qty" data-base="2" data-unit="× {n}" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i11"><label for="i11">Lemons <span class="qty" data-base="4" data-unit="× {n}" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i12"><label for="i12">Medium eggs <span class="qty" data-base="2" data-unit="× {n}" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i13"><label for="i13">Double cream <span class="qty" data-base="100" data-unit="{n} ml" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i14"><label for="i14">Mayonnaise <span class="qty" data-base="3" data-unit="{n} tbsp" data-per="4"></span></label></li>
       </ul>
     </section>
 
     <section>
       <h2>Bakery</h2>
       <ul class="list">
-        <li><input type="checkbox" id="i15"><label for="i15">Sourdough bread <span class="qty">4 slices</span></label></li>
-        <li><input type="checkbox" id="i16"><label for="i16">Panko breadcrumbs <span class="qty">200 g</span></label></li>
+        <li><input type="checkbox" id="i15"><label for="i15">Sourdough bread <span class="qty" data-base="4" data-unit="{n} slices" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i16"><label for="i16">Panko breadcrumbs <span class="qty" data-base="200" data-unit="{n} g" data-per="4"></span></label></li>
       </ul>
     </section>
 
     <section>
       <h2>Wine &amp; Vinegar</h2>
       <ul class="list">
-        <li><input type="checkbox" id="i17"><label for="i17">Dry white wine <span class="qty">180 ml</span></label></li>
-        <li><input type="checkbox" id="i18"><label for="i18">White wine vinegar <span class="qty">60 ml</span></label></li>
+        <li><input type="checkbox" id="i17"><label for="i17">Dry white wine <span class="qty" data-base="180" data-unit="{n} ml" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i18"><label for="i18">White wine vinegar <span class="qty" data-base="60" data-unit="{n} ml" data-per="4"></span></label></li>
       </ul>
     </section>
 
     <section>
       <h2>Cupboard</h2>
       <ul class="list">
-        <li><input type="checkbox" id="i19"><label for="i19">Plain flour <span class="qty">100 g</span></label></li>
+        <li><input type="checkbox" id="i19"><label for="i19">Plain flour <span class="qty" data-base="100" data-unit="{n} g" data-per="4"></span></label></li>
         <li><input type="checkbox" id="i20"><label for="i20">Vegetable oil <span class="qty">for frying</span></label></li>
-        <li><input type="checkbox" id="i21"><label for="i21">Olive oil <span class="qty">80 ml — for salsa</span></label></li>
-        <li><input type="checkbox" id="i22"><label for="i22">Extra virgin olive oil <span class="qty">5 tbsp — mussels &amp; bread</span></label></li>
+        <li><input type="checkbox" id="i21"><label for="i21">Olive oil <span class="qty" data-base="80" data-unit="{n} ml — for salsa" data-per="4"></span></label></li>
+        <li><input type="checkbox" id="i22"><label for="i22">Extra virgin olive oil <span class="qty" data-base="5" data-unit="{n} tbsp — mussels &amp; bread" data-per="4"></span></label></li>
         <li><input type="checkbox" id="i23"><label for="i23">Sea salt flakes</label></li>
         <li><input type="checkbox" id="i24"><label for="i24">Freshly ground black pepper</label></li>
       </ul>
@@ -594,7 +672,11 @@
       Lemons cover the slaw (2), mussels (1) and serving wedges (1). The salsa uses regular olive oil, while the mussels and grilled bread call for extra virgin — pick up both if your cupboard is bare.
     </p>
 
+    <button class="reset" id="exportBtn" style="margin-bottom: 8px;">Copy List for Reminders</button>
     <button class="reset" id="resetBtn">Reset List</button>
+    <p class="disclaimer" style="margin-top: 18px; border-top: none; padding-top: 0; font-style: italic;">
+      Tip: shake your phone to clear all ticks
+    </p>
   </div>
 
   <!-- ============== SCHNITZEL ============== -->
@@ -970,30 +1052,55 @@
     return m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
-  function playAlert() {
-    // Beep three times using Web Audio API (no file needed)
+  function playAlert(btn) {
+    // Looping beep using Web Audio API - keeps going until stopped
+    let audioCtx, alarmInterval;
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const now = ctx.currentTime;
-      for (let i = 0; i < 3; i++) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.frequency.value = 880;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0, now + i * 0.4);
-        gain.gain.linearRampToValueAtTime(0.3, now + i * 0.4 + 0.02);
-        gain.gain.linearRampToValueAtTime(0, now + i * 0.4 + 0.25);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(now + i * 0.4);
-        osc.stop(now + i * 0.4 + 0.3);
+      if (!AudioCtx) return null;
+      audioCtx = new AudioCtx();
+
+      const beep = () => {
+        try {
+          const now = audioCtx.currentTime;
+          for (let i = 0; i < 3; i++) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.value = 880;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0, now + i * 0.25);
+            gain.gain.linearRampToValueAtTime(0.3, now + i * 0.25 + 0.02);
+            gain.gain.linearRampToValueAtTime(0, now + i * 0.25 + 0.18);
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start(now + i * 0.25);
+            osc.stop(now + i * 0.25 + 0.2);
+          }
+        } catch (e) {}
+      };
+
+      beep(); // immediate
+      alarmInterval = setInterval(beep, 1500); // every 1.5s
+    } catch (e) {}
+
+    // Vibration loop too
+    let vibrateInterval;
+    try {
+      if ('vibrate' in navigator) {
+        navigator.vibrate([300, 100, 300]);
+        vibrateInterval = setInterval(() => {
+          try { navigator.vibrate([300, 100, 300]); } catch (e) {}
+        }, 1500);
       }
     } catch (e) {}
-    // Vibration on supported devices
-    try {
-      if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 200]);
-    } catch (e) {}
+
+    return {
+      stop() {
+        if (alarmInterval) clearInterval(alarmInterval);
+        if (vibrateInterval) clearInterval(vibrateInterval);
+        try { if ('vibrate' in navigator) navigator.vibrate(0); } catch (e) {}
+        try { if (audioCtx && audioCtx.close) audioCtx.close(); } catch (e) {}
+      }
+    };
   }
 
   function startTimer(btn) {
@@ -1009,23 +1116,27 @@
       remaining--;
       if (remaining <= 0) {
         clearInterval(interval);
-        activeTimers.delete(btn);
+        const timerData = activeTimers.get(btn);
+        if (timerData) {
+          timerData.interval = null;
+          timerData.alarm = playAlert(btn);
+        }
         btn.classList.remove('running');
         btn.classList.add('done');
-        btn.textContent = label + ' — done!';
-        playAlert();
+        btn.textContent = label + ' — tap to stop';
       } else {
         btn.textContent = label + ' ' + formatTime(remaining);
       }
     }, 1000);
 
-    activeTimers.set(btn, { interval, totalSeconds, label });
+    activeTimers.set(btn, { interval, totalSeconds, label, alarm: null });
   }
 
   function stopTimer(btn) {
     const t = activeTimers.get(btn);
     if (t) {
-      clearInterval(t.interval);
+      if (t.interval) clearInterval(t.interval);
+      if (t.alarm && t.alarm.stop) t.alarm.stop();
       activeTimers.delete(btn);
     }
     btn.classList.remove('running', 'done');
@@ -1089,6 +1200,157 @@
       // silently fail rather than throw
     }
   }
+
+  // ============================================================
+  // Servings scaling
+  // ============================================================
+  const SERVINGS_KEY = 'servings';
+  const MIN_SERVINGS = 1;
+  const MAX_SERVINGS = 12;
+  const servingsValue = document.getElementById('servingsValue');
+  const servingsUp = document.getElementById('servingsUp');
+  const servingsDown = document.getElementById('servingsDown');
+  let servings = 4;
+
+  try {
+    const saved = parseInt(localStorage.getItem(SERVINGS_KEY), 10);
+    if (saved >= MIN_SERVINGS && saved <= MAX_SERVINGS) servings = saved;
+  } catch (e) {}
+
+  function formatQty(n) {
+    if (Number.isInteger(n)) return n.toString();
+    // Convert common decimals to fractions for nicer display
+    const rounded = Math.round(n * 4) / 4;
+    const whole = Math.floor(rounded);
+    const frac = rounded - whole;
+    const fracMap = { 0.25: '¼', 0.5: '½', 0.75: '¾' };
+    if (fracMap[frac]) return (whole > 0 ? whole + ' ' : '') + fracMap[frac];
+    return n.toFixed(1).replace(/\.0$/, '');
+  }
+
+  function updateQuantities() {
+    document.querySelectorAll('.qty[data-base]').forEach(span => {
+      const base = parseFloat(span.dataset.base);
+      const per = parseFloat(span.dataset.per);
+      const unit = span.dataset.unit;
+      const scaled = base * (servings / per);
+      // Round to nearest 5 for grams/ml above 50
+      let display;
+      if ((unit.includes('g') || unit.includes('ml')) && scaled >= 50) {
+        display = Math.round(scaled / 5) * 5;
+      } else if (unit.includes('g') || unit.includes('ml')) {
+        display = Math.round(scaled);
+      } else {
+        display = formatQty(scaled);
+      }
+      span.textContent = unit.replace('{n}', display);
+    });
+    servingsValue.textContent = servings;
+    servingsDown.disabled = servings <= MIN_SERVINGS;
+    servingsUp.disabled = servings >= MAX_SERVINGS;
+  }
+
+  servingsUp.addEventListener('click', () => {
+    if (servings < MAX_SERVINGS) {
+      servings++;
+      try { localStorage.setItem(SERVINGS_KEY, servings); } catch (e) {}
+      updateQuantities();
+    }
+  });
+
+  servingsDown.addEventListener('click', () => {
+    if (servings > MIN_SERVINGS) {
+      servings--;
+      try { localStorage.setItem(SERVINGS_KEY, servings); } catch (e) {}
+      updateQuantities();
+    }
+  });
+
+  updateQuantities();
+
+  // ============================================================
+  // Shake to clear list
+  // ============================================================
+  let lastShakeTime = 0;
+  let lastX = null, lastY = null, lastZ = null;
+  const SHAKE_THRESHOLD = 25;
+
+  function handleMotion(event) {
+    const acc = event.accelerationIncludingGravity;
+    if (!acc || acc.x == null) return;
+    const now = Date.now();
+    if (now - lastShakeTime < 1500) return; // debounce
+
+    if (lastX !== null) {
+      const delta = Math.abs(acc.x - lastX) + Math.abs(acc.y - lastY) + Math.abs(acc.z - lastZ);
+      if (delta > SHAKE_THRESHOLD) {
+        lastShakeTime = now;
+        const anyChecked = Array.from(boxes).some(b => b.checked);
+        if (anyChecked && confirm('Clear all checked items?')) {
+          resetList();
+        }
+      }
+    }
+    lastX = acc.x;
+    lastY = acc.y;
+    lastZ = acc.z;
+  }
+
+  // iOS 13+ requires permission for motion events
+  if (typeof DeviceMotionEvent !== 'undefined') {
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      // Request on first user interaction
+      const requestMotion = async () => {
+        try {
+          const response = await DeviceMotionEvent.requestPermission();
+          if (response === 'granted') {
+            window.addEventListener('devicemotion', handleMotion);
+          }
+        } catch (e) {}
+        document.removeEventListener('touchend', requestMotion);
+      };
+      document.addEventListener('touchend', requestMotion, { once: true });
+    } else {
+      window.addEventListener('devicemotion', handleMotion);
+    }
+  }
+
+  // ============================================================
+  // Export to Reminders (via clipboard)
+  // ============================================================
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const items = [];
+    document.querySelectorAll('#shop ul.list li').forEach(li => {
+      const checkbox = li.querySelector('input[type="checkbox"]');
+      if (checkbox && checkbox.checked) return; // skip already-checked
+      const label = li.querySelector('label');
+      if (label) items.push(label.textContent.trim().replace(/\s+/g, ' '));
+    });
+    const text = items.join('\n');
+    const btn = document.getElementById('exportBtn');
+    const originalText = btn.textContent;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied! Paste into Reminders';
+    } catch (e) {
+      // Fallback: textarea + execCommand
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        btn.textContent = 'Copied! Paste into Reminders';
+      } catch (e2) {
+        btn.textContent = 'Copy failed — try again';
+      }
+      document.body.removeChild(ta);
+    }
+    setTimeout(() => { btn.textContent = originalText; }, 2500);
+  });
 
   // iOS releases the wake lock when the tab is backgrounded.
   // Re-acquire when the page becomes visible again if the user had it on.
