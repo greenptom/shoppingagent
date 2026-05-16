@@ -673,9 +673,10 @@
     </p>
 
     <button class="reset" id="exportBtn" style="margin-bottom: 8px;">Copy List for Reminders</button>
+    <button class="reset" id="shakeBtn" style="margin-bottom: 8px;">Enable Shake to Clear</button>
     <button class="reset" id="resetBtn">Reset List</button>
     <p class="disclaimer" style="margin-top: 18px; border-top: none; padding-top: 0; font-style: italic;">
-      Tip: shake your phone to clear all ticks
+      Tip: once enabled, shake your phone to clear all ticks
     </p>
   </div>
 
@@ -1052,37 +1053,65 @@
     return m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
-  function playAlert(btn) {
-    // Looping beep using Web Audio API - keeps going until stopped
-    let audioCtx, alarmInterval;
+  // iOS audio: create one shared AudioContext, unlocked on first user tap.
+  // iOS suspends audio unless created/resumed inside a user gesture.
+  let sharedAudioCtx = null;
+  let audioUnlocked = false;
+
+  function unlockAudio() {
+    if (audioUnlocked) return;
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return null;
-      audioCtx = new AudioCtx();
-
-      const beep = () => {
-        try {
-          const now = audioCtx.currentTime;
-          for (let i = 0; i < 3; i++) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.value = 880;
-            osc.type = 'sine';
-            gain.gain.setValueAtTime(0, now + i * 0.25);
-            gain.gain.linearRampToValueAtTime(0.3, now + i * 0.25 + 0.02);
-            gain.gain.linearRampToValueAtTime(0, now + i * 0.25 + 0.18);
-            osc.connect(gain).connect(audioCtx.destination);
-            osc.start(now + i * 0.25);
-            osc.stop(now + i * 0.25 + 0.2);
-          }
-        } catch (e) {}
-      };
-
-      beep(); // immediate
-      alarmInterval = setInterval(beep, 1500); // every 1.5s
+      if (!AudioCtx) return;
+      if (!sharedAudioCtx) sharedAudioCtx = new AudioCtx();
+      // Resume if suspended (iOS starts in suspended state)
+      if (sharedAudioCtx.state === 'suspended') {
+        sharedAudioCtx.resume();
+      }
+      // Play a silent buffer to fully unlock audio on iOS
+      const buffer = sharedAudioCtx.createBuffer(1, 1, 22050);
+      const source = sharedAudioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(sharedAudioCtx.destination);
+      source.start(0);
+      audioUnlocked = true;
     } catch (e) {}
+  }
 
-    // Vibration loop too
+  // Unlock on the very first interaction with the page
+  ['touchstart', 'touchend', 'click'].forEach(evt => {
+    document.addEventListener(evt, unlockAudio, { once: false, passive: true });
+  });
+
+  function playAlert(btn) {
+    let alarmInterval;
+    const ctx = sharedAudioCtx;
+
+    const beep = () => {
+      if (!ctx || ctx.state === 'closed') return;
+      // Resume in case iOS suspended it again
+      if (ctx.state === 'suspended') ctx.resume();
+      try {
+        const now = ctx.currentTime;
+        for (let i = 0; i < 3; i++) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.frequency.value = 880;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0, now + i * 0.25);
+          gain.gain.linearRampToValueAtTime(0.4, now + i * 0.25 + 0.02);
+          gain.gain.linearRampToValueAtTime(0, now + i * 0.25 + 0.18);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(now + i * 0.25);
+          osc.stop(now + i * 0.25 + 0.2);
+        }
+      } catch (e) {}
+    };
+
+    beep(); // immediate
+    alarmInterval = setInterval(beep, 1500);
+
+    // Vibration: works on Android, no-op on iOS (Apple doesn't support it)
     let vibrateInterval;
     try {
       if ('vibrate' in navigator) {
@@ -1098,7 +1127,6 @@
         if (alarmInterval) clearInterval(alarmInterval);
         if (vibrateInterval) clearInterval(vibrateInterval);
         try { if ('vibrate' in navigator) navigator.vibrate(0); } catch (e) {}
-        try { if (audioCtx && audioCtx.close) audioCtx.close(); } catch (e) {}
       }
     };
   }
@@ -1296,23 +1324,69 @@
     lastZ = acc.z;
   }
 
-  // iOS 13+ requires permission for motion events
-  if (typeof DeviceMotionEvent !== 'undefined') {
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-      // Request on first user interaction
-      const requestMotion = async () => {
+  // iOS 13+ requires permission for motion events. Request explicitly via button.
+  const shakeBtn = document.getElementById('shakeBtn');
+  let shakeEnabled = false;
+
+  function enableShakeListener() {
+    window.addEventListener('devicemotion', handleMotion);
+    shakeEnabled = true;
+    shakeBtn.textContent = 'Shake to Clear: ON';
+    shakeBtn.style.borderColor = 'var(--accent)';
+    shakeBtn.style.color = 'var(--accent)';
+    try { localStorage.setItem('shake-enabled', '1'); } catch (e) {}
+  }
+
+  function checkMotionSupport() {
+    if (typeof DeviceMotionEvent === 'undefined') {
+      shakeBtn.disabled = true;
+      shakeBtn.textContent = 'Shake not supported';
+      return false;
+    }
+    return true;
+  }
+
+  if (checkMotionSupport()) {
+    // Detect if running as Home Screen app (standalone mode)
+    // iOS standalone mode blocks DeviceMotionEvent.requestPermission
+    const isStandalone = window.navigator.standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches;
+
+    shakeBtn.addEventListener('click', async () => {
+      if (shakeEnabled) return;
+      // iOS 13+ requires explicit permission
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        if (isStandalone) {
+          shakeBtn.textContent = 'Open in Safari to enable';
+          setTimeout(() => { shakeBtn.textContent = 'Enable Shake to Clear'; }, 3500);
+          return;
+        }
         try {
           const response = await DeviceMotionEvent.requestPermission();
           if (response === 'granted') {
-            window.addEventListener('devicemotion', handleMotion);
+            enableShakeListener();
+          } else {
+            shakeBtn.textContent = 'Permission denied';
+            setTimeout(() => { shakeBtn.textContent = 'Enable Shake to Clear'; }, 2500);
           }
-        } catch (e) {}
-        document.removeEventListener('touchend', requestMotion);
-      };
-      document.addEventListener('touchend', requestMotion, { once: true });
-    } else {
-      window.addEventListener('devicemotion', handleMotion);
-    }
+        } catch (e) {
+          shakeBtn.textContent = 'Could not enable';
+          setTimeout(() => { shakeBtn.textContent = 'Enable Shake to Clear'; }, 2500);
+        }
+      } else {
+        // Android / older iOS - no permission needed
+        enableShakeListener();
+      }
+    });
+
+    // If we previously enabled it AND we're on a platform that doesn't need permission,
+    // re-enable automatically. iOS always needs a fresh tap, so don't auto-enable there.
+    try {
+      const wasEnabled = localStorage.getItem('shake-enabled') === '1';
+      if (wasEnabled && typeof DeviceMotionEvent.requestPermission !== 'function') {
+        enableShakeListener();
+      }
+    } catch (e) {}
   }
 
   // ============================================================
